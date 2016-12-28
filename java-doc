@@ -1,0 +1,116 @@
+一、软件准备
+Eclipse、JDK、Maven
+1、	Eclipse下载：https://www.eclipse.org/downloads/ 
+2、	下载JDK：http://www.oracle.com/technetwork/java/javase/downloads/index.html
+3、	下载maven：http://maven.apache.org/download.cgi
+下载完成这些内容分别进行安装：
+1、	解压或者安装eclipse，打开eclipse可以自动找到适配的java目录
+2、	安装jdk，安装完成配置环境变量，在系统变量里面创建：
+a)	CLASSPATH：C:\Program Files\Java\jdk1.8.0_112
+b)	JAVA_HOME：C:\Program Files\Java\jdk1.8.0_112
+c)	PATH：%JAVA_HOME%\bin
+3、	解压maven，配置maven环境变量，在系统变量里面创建：
+a)	MAVEN_HOME：D:\apache-maven-3.3.9
+b)	PATH：%MAVEN_HOME%\bin
+在【运行】里面输入cmd，在cmd界面确认java、maven是否正常安装：
+输入java –v  mvn –v 如果有安装信息，说明全部安装成功，否则按照错误提示进行重新安装或者修复。
+二、mvn、eclipse配置
+若eclipse没有maven插件需要配置
+1、	按照eclipse插件，点击help，选择install new software。
+2、	在work with输入juno - http://download.eclipse.org/releases/juno 进行搜索。
+3、	点击filter输入maven，选择collaboration进行安装。
+4、	重启eclipse 选择window -> preferences，输入maven进行相关设置。
+配置eclipse maven，
+1、	选择maven里面的Installations点击add选择maven的解压目录，并apply
+2、	创建maven点击File->New->Maven Project进行创建。勾选simple
+3、	填写Group id和artifact id， Version默认，Packaging默认为jar,Name，Description选 填，其他的不填，之后点击Finish
+4、	maven文件夹下找到User Settings，主要是配置用户设置，一个是Global Settings（全局配置信息）和User Settings（只针对这个工作空间进行设置）
+5、	创建一个Maven的web项目，把第三步的Packaging的类型改为war，Project Object Model
+
+Mvn工程的一些tips：
+1、Mvn常用命令：
+http://www.cnblogs.com/adolfmc/archive/2012/07/31/2616908.html 
+http://www.cnblogs.com/phoebus0501/archive/2011/05/10/2042511.html 
+mvn install:install-file -DgroupId=FCKeditor -DartifactId=FCKeditor -Dversion=2.3 -Dpackaging=jar -Dfile=d:\FCKeditor-2.3.jar 
+2、Jar包依赖的jar可以修改pom文件里面的dependency（需要在mvn的settings里面设置私人空间否则每次都需要下载）
+从现有url里面下载，公用的groupId、artifactId：http://mvnrepository.com/ 
+
+4、	需要工程自动下载nexus类似的公共库的资源，需要配置settings,包括servers、mirror、profile、activeProfiles等几项
+<servers>
+	  <server>  
+		<id>xxx-reposity</id>  
+		<username>xx</username>  
+		<password>xxx</password>  
+	  </server>  
+    <server>  
+      <id>tomcat</id>  
+      <username>xxx</username>  
+      <password>xxx</password>  
+</server>     
+
+<mirror> 
+<id>central</id> 
+<mirrorOf>central</mirrorOf>  
+<url>http://nexus.xxx.org/nexus/content/groups/public</url> </mirror> 
+</mirrors>
+
+	 <profile> 
+		<id>dev</id> 
+		<repositories> 
+			<repository> 
+				<id>xxx-reposity</id> 
+				<url>http://nexus.xxx.org/nexus/content/groups/public</url> 
+				<releases> 
+					<enabled>true</enabled> 
+				</releases> 
+				<snapshots> 
+					<enabled>true</enabled> 
+				</snapshots> 
+			</repository>
+		</repositories> 
+	</profile>
+5、	修改完settings，在pom里面添加相关的依赖包，然后刷新一下project，rebuild一下。
+
+
+三、Storm开发tips
+1、熟悉storm模块nimbus->zookeeper->supervisor->work-> 后面是代码模块
+spout：
+open()方法：程序在进入Spout时需要执行的方法
+nextTuple()方法：任务执行的主要方法，其特征是永远不会结束，一直循环执行
+declareOutputFields()方法：声明发送到下一个Bolt的字段
+ack()方法：每个tuple执行完成后调用，根据messageId跟踪tuple执行情况
+fail()方法：每个tuple执行失败后调用
+bolt ：Bolt类接收由Spout或者其他上游Bolt类发来的Tuple，对其进行处理。Bolt组件的实现可以通过继承BasicRichBolt类或者IRichBolt接口来完成
+prepare()方法：程序在执行之前执行该方法，用于做以些准备工作。
+execute()方法：主要执行的方法，所有业务均在此处理，接受从spout传送过来的数据
+cleanup()方法：bolt执行完成后调用的方法，用于清理操作，仅在单机版环境下有效。
+declareOutputFields()方法：与Spout中的方法相同，定义下一个Bolts接收的参数名称
+topology：Topology是Storm的运行任务，构建Topology就是通知Storm怎样运行程序。在此过程中，可以定义哪些类作为Spout，哪些类作为Bolt，并定义分组策略和执行的并行度，所有这些，都定义在TopologyBuilder对象上。
+TopologyBuilder builder = new TopologyBuilder();
+builder.setSpout("word-reader", new WordReader());
+builder.setBolt("word-normalizer", new WordNormalizer(),12).shuffleGrouping("word-reader");
+builder.setBolt("word-counter", new WordCounter()).fieldsGrouping("word-reader", new Fields("line"));
+分组策略重述如下：
+　　(1)ShuffleGrouping:随机分组，随机分发Stream中的tuple，保证每个Bolt的Task接收Tuple数量大致一致；
+　　(2)FieldsGrouping：按照字段分组，保证相同字段的Tuple分配到同一个Task中；
+　　(3)AllGrouping：广播发送，每一个Task都会受到所有的Tuple；
+    (4)GlobalGrouping：全局分组，所有的Tuple都发送到同一个Task中，此时一般将当前Component的并发数目设置为1；
+    (5)NonGrouping：不分组，和ShuffleGrouping类似，当前Task的执行会和它的被订阅者在同一个线程中执行；
+    (6)DirectGrouping：直接分组，直接指定由某个Task来执行Tuple的处理，而且，此时必须有emitDirect方法来发送；
+ (7) localOrShuffleGrouping：和ShuffleGrouping类似，若Bolt有多个Task在同一个进程中，Tuple会随机发给这些Task。
+参考：
+http://wenku.baidu.com/link?url=NGX867PePey0O2kgF3BzrD6tj-IxWKrnVShMDRmMeSGGgXvvVSamir6bBu9oVOH7_uJET-IInrA8g7Sbtr7IjDj3bQgSUYGFEiCciJRGaa_ 
+2、开发过程编写类的时候，extends类BaseRishBolt 或者BaseRishSpout可以点击类名自动补充各个细节模块，自己开发的模块需要新增。
+
+
+算法评测规则：
+http://blog.csdn.net/pzy20062141/article/details/48711355 
+
+推荐架构：
+http://www.cnblogs.com/kobedeshow/p/3569525.html
+http://www.csdn.net/article/2015-12-15/2826484 
+NOSQLDB支持
+http://blog.jobbole.com/1344/ 
+
+SVM入门
+http://www.blogjava.net/zhenandaci/archive/2016/02/29/254519.html
