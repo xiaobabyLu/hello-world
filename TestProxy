@@ -1,0 +1,33 @@
+interface Subject{
+	public abstract void make();
+}
+class RealSubject implements Subject{
+	public void make(){
+	System.out.println("This is a fucking asshole");
+	}
+}
+class ProxySubject implements Subject{
+	private Subject subject;
+	public ProxySubject(Subject subject){
+		this.subject = subject;
+	}
+	public void prepare(){
+		System.out.println("Are you ready?");
+	}
+	public void make(){
+		this.prepare();
+		this.subject.make();
+		this.destroy();
+	}
+	public void destroy(){
+		System.out.println("Clear!");
+	}
+}
+public class TestProxy{
+	public static void main(String args[]){
+		Subject sub = new ProxySubject(new RealSubject());
+		sub.make();
+		
+	}
+
+}
