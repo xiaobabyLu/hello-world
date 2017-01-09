@@ -1,0 +1,51 @@
+interface Engineer{
+	public static final String SIGNAL="GOOD";
+	public abstract void work();
+}
+class DataDevelop implements Engineer{
+	public void work(){
+		System.out.println("This is a DataDeveloper doing something!");
+	}
+}
+class DataProduct implements Engineer{
+	public void work(){
+		System.out.println("This is a DataProucter working!");
+	}
+}
+class Factory{
+	public static Engineer getInstance(String className){
+		if("DataDevelop".equals(className)){
+			return new DataDevelop();
+		}else if("DataProduct".equals(className)){
+			return new DataProduct();
+		}else{
+			return null;
+		}
+	}
+}
+class DataAnalysis{
+	private String data;
+	public void DataAnalysis(){
+		System.out.println("This a null construct!");
+	}
+	public void DataAnalysis(String data){
+		this.data = data;
+	}
+	public void setData(String data){
+		this.data = data;
+	}
+	public String getData(){
+		return this.data;
+	}
+}
+public class DataFactory{
+	public static void main(String args[]){
+		Engineer ng = Factory.getInstance(args[0]);
+		ng.work();
+		DataAnalysis da = new DataAnalysis();
+		da.setData(args[0]);
+		da.getData();
+		System.out.println(da.getData());
+	}
+
+}
