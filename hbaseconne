@@ -1,0 +1,58 @@
+package conn;
+
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
+
+public class HbaseClient {
+		public static final String NAME = "tablename";
+		static final String tableName = "tablename";
+		static final TableName tableNameObj = TableName.valueOf(tableName);
+
+		public static void main(String[] args) throws Exception {
+		Configuration  config = new Configuration();
+		config.set("hbase.zookeeper.quorum","h1,h2,h3");
+		Connection conn=ConnectionFactory.createConnection(config);
+		
+		try {  
+			Admin admin = conn.getAdmin();
+//			System.out.println(admin.listTables().toString());
+		  if (admin.tableExists(tableNameObj)) {  
+	          System.out.println("表已经存在！"); 
+	          Table table=conn.getTable(tableNameObj);
+	          
+	          Scan scan=new Scan();  
+
+	          ResultScanner rs=table.getScanner(scan);
+	          for(Result r: rs){
+	        	  for(Cell cell : r.listCells()){
+	        		  System.out.print("rowkey:"+new String(CellUtil.cloneRow(cell))+"\t");
+	        		  System.out.print("Family:"+new String(CellUtil.cloneFamily(cell))+"\t");
+	        		  System.out.print("Qualifier:"+new String(CellUtil.cloneQualifier(cell))+"\t");
+	        		  System.out.print("Value:"+new String(CellUtil.cloneValue(cell))+"\t");
+	        		  System.out.print("Timestamp:"+cell.getTimestamp());
+	        		  System.out.println();
+	        	  }
+	          	}
+	          rs.close();
+	          table.close(); 
+	      }else{  
+	          System.out.println("表不存在");  
+	      } 
+		  config.clear(); 
+		 } catch (IOException e) {    
+	         e.printStackTrace();    
+	     }  
+		}
+}
+
