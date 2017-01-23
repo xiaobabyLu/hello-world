@@ -1,0 +1,29 @@
+package testing.com.tuniu.sread;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+class MyThread extends Thread{
+	public void run(){
+		System.out.println(Thread.currentThread().getName()+"正在运行……");
+	}
+}
+public class ThreadDemo2 {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		ExecutorService pool =Executors.newFixedThreadPool(2);
+		Thread t1= new MyThread();
+		Thread t2= new MyThread();
+		Thread t3= new MyThread();
+		Thread t4= new MyThread();
+		Thread t5= new MyThread();
+		pool.execute(t1);
+		pool.execute(t2);
+		pool.execute(t3);
+		pool.execute(t4);
+		pool.execute(t5);
+		pool.shutdown();
+	}
+
+}
