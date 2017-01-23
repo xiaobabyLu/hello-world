@@ -1,0 +1,34 @@
+package testing.com.tuniu.sread;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+class SingleTask implements Runnable{
+
+	@Override
+	public void run() {
+		System.out.println(Thread.currentThread().getName()+"正在运行……");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(Thread.currentThread().getName()+"执行结束");
+	}
+	
+}
+public class ThreadDemo3 {
+	public static void main(String[] args) {
+		ExecutorService pool = Executors.newSingleThreadExecutor();
+		Runnable task1 = new SingleTask();
+		Runnable task2 = new SingleTask();
+		Runnable task3 = new SingleTask();
+		
+		pool.execute(task1);
+		pool.execute(task2);
+		pool.execute(task3);
+		pool.shutdown();
+	}
+
+}
