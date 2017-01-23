@@ -1,0 +1,25 @@
+package testing.com.tuniu.sread;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+class MyRunnable implements Runnable{
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		for (int x = 0; x < 100; x++) {
+			System.out.println(Thread.currentThread().getName()+":"+x);
+		}
+	}
+}
+public class ThreadDemo {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+	ExecutorService pool = Executors.newFixedThreadPool(2);
+	pool.submit(new MyRunnable());
+	pool.submit(new MyRunnable());
+	pool.shutdown();
+
+	}
+}
